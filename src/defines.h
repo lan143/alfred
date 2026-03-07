@@ -6,14 +6,15 @@
 #define ETH_POWER_PIN  5
 #define ETH_MDC_PIN    23
 #define ETH_MDIO_PIN  18
-#define ETH_TYPE      ETH_PHY_LAN8720
+#define ETH_TYPE      ETH_PHY_RTL8201
 #define ETH_CLK_MODE  ETH_CLOCK_GPIO0_OUT
 
 #define RELAY_WARM_FLOOR 2
 #define RELAY_UNKNOW 15
 
-#define RS485RX  35
-#define RS485TX  32
+#define RS485RX  9
+#define RS485TX  10
+#define RS485RTS 4
 
 #define EEPROM_SIZE 2048
 
