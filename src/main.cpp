@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <ArduinoOTA.h>
-#include <SPIFFS.h>
+#include <LittleFS.h>
 #include <data_mgr.h>
 #include <storage/littlefs_storage.hpp>
 #include <esp_log.h>
@@ -112,6 +112,8 @@ void setup()
         ->setModel(deviceModel)
         ->setName(deviceName)
         ->setManufacturer(deviceManufacturer);
+
+    LOGI("setup", "littlefs total bytes: %d, used bytes: %d", LittleFS.totalBytes(), LittleFS.usedBytes());
 
     LOGI("setup", "complete");
 }

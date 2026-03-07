@@ -1,6 +1,6 @@
 #include <ArduinoJSON.h>
 #include <FS.h>
-#include <SPIFFS.h>
+#include <LittleFS.h>
 #include <esp_system.h>
 #include <ExtStrings.h>
 #include <Json.h>
@@ -11,9 +11,9 @@
 
 void Handler::init()
 {
-    _server->serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
-    _server->serveStatic("/jquery-3.6.0.min.js", SPIFFS, "/jquery-3.6.0.min.js");
-    _server->serveStatic("/bootstrap.min.js", SPIFFS, "/bootstrap.min.js");
+    _server->serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
+    _server->serveStatic("/jquery-3.6.0.min.js", LittleFS, "/jquery-3.6.0.min.js");
+    _server->serveStatic("/bootstrap.min.js", LittleFS, "/bootstrap.min.js");
 
     _healthCheck->registerHandlers(_server);
 
