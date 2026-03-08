@@ -7,33 +7,28 @@
 #include <discovery.h>
 #include <mqtt.h>
 #include <healthcheck.h>
-#include <state/state_mgr.h>
 #include <wirenboard.h>
-#include <device/wb_msw.h>
-#include <device/wb_led.h>
 #include <network/network.h>
 #include <log/log.h>
+#include <Wire.h>
+#include <TCA9555.h>
 
 #include "defines.h"
 #include "config.h"
-#include "command/command_consumer.h"
-#include "state/producer.h"
-#include "state/state_mgr.h"
-#include "state/state.h"
-#include "state/producer.h"
+#include "hallway/hallway.h"
 #include "web/handler.h"
+
+TCA9555 tca9555(0x20, &Wire);
 
 EDConfig::DataMgr<Config> configMgr(new EDConfig::StorageLittleFS<Config>("/config.bin"));
 EDNetwork::NetworkMgr networkMgr;
 EDMQTT::MQTT mqtt;
-EDWB::WirenBoard modbus(Serial2);
+EDWB::WirenBoard modbus(Serial1, RS485RTS);
 
 EDHealthCheck::HealthCheck healthCheck;
 EDHA::DiscoveryMgr discoveryMgr;
-StateProducer stateProducer(&mqtt);
-EDUtils::StateMgr<State> stateMgr(&stateProducer);
 
-CommandConsumer commandConsumer;
+Hallway::Hallway hallway(&discoveryMgr, &mqtt, &modbus);
 
 Handler handler(&configMgr, &networkMgr, &healthCheck);
 
@@ -54,10 +49,15 @@ void setup()
         return;
     }
 
+    LOGI("setup", "init i2c");
+    Wire.begin(I2CSDA, I2CSCL);
+    Wire.setClock(100000);
+
+    // tmp enable Vout
+    tca9555.begin(OUTPUT, 0x40);
+
     configMgr.setDefault([](Config* config) {
         snprintf(config->network.wifiAPSSID, WIFI_SSID_LEN, "Alfred_%s", EDUtils::getMacAddress().c_str());
-        snprintf(config->mqttStateTopic, MQTT_TOPIC_LEN, "alfred/%s/state", EDUtils::getChipID());
-        snprintf(config->mqttCommandTopic, MQTT_TOPIC_LEN, "alfred/%s/set", EDUtils::getChipID());
         snprintf(config->mqttHADiscoveryPrefix, MQTT_TOPIC_LEN, "homeassistant");
 
         strcpy(config->log.host, "192.168.1.2");
@@ -65,20 +65,25 @@ void setup()
         strcpy(config->log.uri, "/_bulk");
 
         strcpy(config->otaPassword, "somestrongpassword");
+
+        snprintf(config->hallway.mqttStateTopic, MQTT_TOPIC_LEN, "alfred/%s/hallway/state", EDUtils::getChipID());
+        snprintf(config->hallway.mqttCommandTopic, MQTT_TOPIC_LEN, "alfred/%s/hallway/set", EDUtils::getChipID());
+        config->hallway.modbusAddressMTD262MB = 1;
+        config->hallway.modbusAddressWBLED = 2;
+        config->hallway.modbusAddressWBMS = 3;
     });
     configMgr.load();
 
     networkLogger.init(configMgr.getData()->log, CONTROLLER_NAME, EDUtils::formatString("Alfred_%s", EDUtils::getMacAddress().c_str()));
 
-    Serial2.begin(configMgr.getData()->modbusSpeed, SERIAL_8N1, RS485RX, RS485TX);
+    Serial1.begin(configMgr.getData()->modbusSpeed, SERIAL_8N1, RS485RX, RS485TX);
+
     modbus.init(15);
 
     networkMgr.init(configMgr.getData()->network, true, ETH_ADDR, ETH_POWER_PIN, ETH_MDC_PIN, ETH_MDIO_PIN, ETH_TYPE, ETH_CLK_MODE);
 
     ArduinoOTA.setPassword(configMgr.getData()->otaPassword);
     ArduinoOTA.begin();
-
-    commandConsumer.init(configMgr.getData()->mqttCommandTopic);
 
     mqtt.init(configMgr.getData()->mqtt);
     networkMgr.OnConnect([&](bool isConnected) {
@@ -92,9 +97,6 @@ void setup()
         }
     });
     healthCheck.registerService(&mqtt);
-    mqtt.subscribe(&commandConsumer);
-
-    stateProducer.init(configMgr.getData()->mqttStateTopic);
 
     handler.init();
 
@@ -113,7 +115,7 @@ void setup()
         ->setName(deviceName)
         ->setManufacturer(deviceManufacturer);
 
-    LOGI("setup", "littlefs total bytes: %d, used bytes: %d", LittleFS.totalBytes(), LittleFS.usedBytes());
+    hallway.init(configMgr.getData()->hallway, device);
 
     LOGI("setup", "complete");
 }
@@ -124,6 +126,6 @@ void loop()
     discoveryMgr.loop();
     ArduinoOTA.handle();
     healthCheck.loop();
-    stateMgr.loop();
     networkLogger.update();
+    hallway.update();
 }

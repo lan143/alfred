@@ -46,6 +46,130 @@ void Handler::init()
         request->send(response);
     });
 
+    _server->on("/api/settings/modbus", HTTP_POST, [this](AsyncWebServerRequest *request) {
+        if (
+            !request->hasParam("modbusSpeed", true)
+        ) {
+            request->send(422, "application/json", "{\"message\": \"not present modbus params in request\"}");
+            return;
+        }
+
+        const AsyncWebParameter* modbusSpeedParam = request->getParam("modbusSpeed", true);
+
+        int modbusSpeed;
+        if (EDUtils::str2int(&modbusSpeed, modbusSpeedParam->value().c_str(), 10) != EDUtils::STR2INT_SUCCESS) {
+            request->send(422, "application/json", "{\"message\": \"Incorrect modbus speed\"}");
+            return;
+        }
+
+        switch (modbusSpeed) {
+            case 1200:
+                break;
+            case 2400:
+                break;
+            case 4800:
+                break;
+            case 9600:
+                break;
+            case 19200:
+                break;
+            case 38400:
+                break;
+            case 57600:
+                break;
+            case 115200:
+                break;
+            default:
+                request->send(422, "application/json", "{\"message\": \"Unsupported modbus speed\"}");
+                return;
+        }
+
+        _configMgr->getData()->modbusSpeed = modbusSpeed;
+
+        if (_configMgr->store()) {
+            request->send(200, "application/json", "{}");
+        } else {
+            request->send(500, "application/json", "{\"message\": \"Failed to update config\"}");
+        }
+    });
+
+    _server->on("/api/settings/hallway", HTTP_GET, [this](AsyncWebServerRequest *request) {
+        AsyncResponseStream *response = request->beginResponseStream("application/json");
+
+        std::string payload = EDUtils::buildJson([this](JsonObject entity) {
+            auto config = _configMgr->getData();
+
+            entity["mqttCommandTopic"] = config->hallway.mqttCommandTopic;
+            entity["mqttStateTopic"] = config->hallway.mqttStateTopic;
+
+            entity["modbusAddressMTD262MB"] = config->hallway.modbusAddressMTD262MB;
+            entity["modbusAddressWBLED"] = config->hallway.modbusAddressWBLED;
+            entity["modbusAddressWBMS"] = config->hallway.modbusAddressWBMS;
+        });
+
+        response->write(payload.c_str());
+        request->send(response);
+    });
+
+    _server->on("/api/settings/hallway/update", HTTP_POST, [this](AsyncWebServerRequest *request) {
+        if (
+            !request->hasParam("mqttCommandTopic", true)
+            || !request->hasParam("mqttStateTopic", true)
+            || !request->hasParam("modbusAddressMTD262MB", true)
+            || !request->hasParam("modbusAddressWBLED", true)
+            || !request->hasParam("modbusAddressWBMS", true)
+        ) {
+            request->send(422, "application/json", "{\"message\": \"not present required fields in request\"}");
+            return;
+        }
+
+        const AsyncWebParameter* mqttCommandTopicParam = request->getParam("mqttCommandTopic", true);
+        const AsyncWebParameter* mqttStateTopicParam = request->getParam("mqttStateTopic", true);
+        const AsyncWebParameter* modbusAddressMTD262MBParam = request->getParam("modbusAddressMTD262MB", true);
+        const AsyncWebParameter* modbusAddressWBLEDParam = request->getParam("modbusAddressWBLED", true);
+        const AsyncWebParameter* modbusAddressWBMSParam = request->getParam("modbusAddressWBMS", true);
+
+        if (mqttCommandTopicParam->value().length() > MQTT_TOPIC_LEN-1) {
+            request->send(422, "application/json", "{\"message\": \"WiFi SSID lenght more 64 symbols\"}");
+            return;
+        }
+
+        if (mqttStateTopicParam->value().length() > MQTT_TOPIC_LEN-1) {
+            request->send(422, "application/json", "{\"message\": \"WiFi SSID lenght more 64 symbols\"}");
+            return;
+        }
+
+        int modbusAddressMTD262MB;
+        if (EDUtils::str2int(&modbusAddressMTD262MB, modbusAddressMTD262MBParam->value().c_str(), 10) != EDUtils::STR2INT_SUCCESS) {
+            request->send(422, "application/json", "{\"message\": \"Incorrect MTD262MB address\"}");
+            return;
+        }
+
+        int modbusAddressWBLED;
+        if (EDUtils::str2int(&modbusAddressWBLED, modbusAddressWBLEDParam->value().c_str(), 10) != EDUtils::STR2INT_SUCCESS) {
+            request->send(422, "application/json", "{\"message\": \"Incorrect WB-LED address\"}");
+            return;
+        }
+
+        int modbusAddressWBMS;
+        if (EDUtils::str2int(&modbusAddressWBMS, modbusAddressWBMSParam->value().c_str(), 10) != EDUtils::STR2INT_SUCCESS) {
+            request->send(422, "application/json", "{\"message\": \"Incorrect WB-MS address\"}");
+            return;
+        }
+
+        std::strcpy(_configMgr->getData()->hallway.mqttCommandTopic, mqttCommandTopicParam->value().c_str());
+        std::strcpy(_configMgr->getData()->hallway.mqttStateTopic, mqttStateTopicParam->value().c_str());
+        _configMgr->getData()->hallway.modbusAddressMTD262MB = modbusAddressMTD262MB;
+        _configMgr->getData()->hallway.modbusAddressWBLED = modbusAddressWBLED;
+        _configMgr->getData()->hallway.modbusAddressWBMS = modbusAddressWBMS;
+
+        if (_configMgr->store()) {
+            request->send(200, "application/json", "{}");
+        } else {
+            request->send(500, "application/json", "{\"message\": \"Failed to update config\"}");
+        }
+    });
+
     _server->on("/api/settings", HTTP_GET, [this](AsyncWebServerRequest *request) {
         AsyncResponseStream *response = request->beginResponseStream("application/json");
 
@@ -60,9 +184,6 @@ void Handler::init()
             entity["mqttPassword"] = config->mqtt.password;
             entity["mqttIsHADiscovery"] = config->mqttIsHADiscovery;
             entity["mqttHADiscoveryPrefix"] = config->mqttHADiscoveryPrefix;
-            entity["mqttCommandTopic"] = config->mqttCommandTopic;
-            entity["mqttLightSwitchCommandTopic"] = config->mqttLightSwitchCommandTopic;
-            entity["mqttStateTopic"] = config->mqttStateTopic;
         });
 
         response->write(payload.c_str());
@@ -117,9 +238,6 @@ void Handler::init()
         const AsyncWebParameter* password = request->getParam("password", true);
         const AsyncWebParameter* haDiscoveryPrefix = request->getParam("haDiscoveryPrefix", true);
         const AsyncWebParameter* ishaDiscoveryEnabled = request->getParam("mqttIsHADiscovery", true);
-        const AsyncWebParameter* stateTopic = request->getParam("stateTopic", true);
-        const AsyncWebParameter* commandTopic = request->getParam("commandTopic", true);
-        const AsyncWebParameter* lightCommandTopic = request->getParam("lightSwitchCommandTopic", true);
 
         if (host->value().length() == 0 || host->value().length() > HOST_LEN-1) {
             request->send(422, "application/json", "{\"message\": \"MQTT host lenght invalid\"}");
@@ -152,29 +270,11 @@ void Handler::init()
             return;
         }
 
-        if (stateTopic->value().length() == 0 || stateTopic->value().length() > MQTT_TOPIC_LEN-1) {
-            request->send(422, "application/json", "{\"message\": \"state topic length invalid\"}");
-            return;
-        }
-
-        if (commandTopic->value().length() == 0 || commandTopic->value().length() > MQTT_TOPIC_LEN-1) {
-            request->send(422, "application/json", "{\"message\": \"command topic length invalid\"}");
-            return;
-        }
-
-        if (lightCommandTopic->value().length() == 0 || lightCommandTopic->value().length() > MQTT_TOPIC_LEN-1) {
-            request->send(422, "application/json", "{\"message\": \"light command topic length invalid\"}");
-            return;
-        }
-
         strcpy(config->mqtt.host, host->value().c_str());
         config->mqtt.port = (uint16_t)mqttPort;
         strcpy(config->mqtt.login, login->value().c_str());
         strcpy(config->mqtt.password, password->value().c_str());
         strcpy(config->mqttHADiscoveryPrefix, haDiscoveryPrefix->value().c_str());
-        strcpy(config->mqttStateTopic, stateTopic->value().c_str());
-        strcpy(config->mqttCommandTopic, commandTopic->value().c_str());
-        strcpy(config->mqttLightSwitchCommandTopic, lightCommandTopic->value().c_str());
 
         if (strcmp(ishaDiscoveryEnabled->value().c_str(), "true") == 0) {
             config->mqttIsHADiscovery = true;

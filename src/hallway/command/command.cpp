@@ -4,7 +4,7 @@
 #include "defines.h"
 #include "command.h"
 
-bool Command::unmarshalJSON(const char* data)
+bool Hallway::Command::unmarshalJSON(const char* data)
 {
     return EDUtils::parseJson(data, [this](JsonObject root) {
         return true;

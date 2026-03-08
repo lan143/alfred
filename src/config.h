@@ -6,6 +6,8 @@
 #include <network/network_config.h>
 #include <log/log_config.h>
 
+#include "hallway/hallway_config.h"
+
 #define CURRENT_VERSION 1
 
 #define WIFI_SSID_LEN 32 + 1
@@ -30,10 +32,9 @@ struct Config
 
     bool mqttIsHADiscovery = true;
     char mqttHADiscoveryPrefix[MQTT_TOPIC_LEN] = {0};
-    char mqttCommandTopic[MQTT_TOPIC_LEN] = {0};
-    char mqttLightSwitchCommandTopic[MQTT_TOPIC_LEN] = {0};
-    char mqttStateTopic[MQTT_TOPIC_LEN] = {0};
 
     // modbus
     uint32_t modbusSpeed = 0;
+
+    Hallway::Config hallway;
 };

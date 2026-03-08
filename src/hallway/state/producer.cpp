@@ -1,6 +1,6 @@
 #include "producer.h"
 
-bool StateProducer::publish(State* state)
+bool Hallway::StateProducer::publish(State* state)
 {
     if (!_mqtt->isConnected()) {
         return false;

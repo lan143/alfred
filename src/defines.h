@@ -16,6 +16,9 @@
 #define RS485TX  10
 #define RS485RTS 4
 
+#define I2CSDA 32
+#define I2CSCL 33
+
 #define EEPROM_SIZE 2048
 
 #ifndef CONTROLLER_NAME

@@ -25,9 +25,6 @@ function loadSettings() {
             $('form#mqtt input[name=mqttPort]').val(data.mqttPort);
             $('form#mqtt input[name=mqttLogin]').val(data.mqttLogin);
             $('form#mqtt input[name=mqttPassword]').val(data.mqttPassword);
-            $('form#mqtt input[name=mqttCommandTopic]').val(data.mqttCommandTopic);
-            $('form#mqtt input[name=mqttLightSwitchCommandTopic]').val(data.mqttLightSwitchCommandTopic);
-            $('form#mqtt input[name=mqttStateTopic]').val(data.mqttStateTopic);
             $('form#mqtt input[name=mqttHADiscoveryPrefix]').val(data.mqttHADiscoveryPrefix);
 
             if (data.mqttIsHADiscovery) {
@@ -47,11 +44,24 @@ function loadModbusSettings() {
         dataType: 'json',
         success: function (data) {
             $('form#modbus-settings select[name=modbusSpeed]').val(data.modbusSpeed);
-            $('form#modbus-settings input[name=addressWBMSW]').val(data.addressWBMSW);
-            $('form#modbus-settings input[name=addressWBLED1]').val(data.addressWBLED1);
-            $('form#modbus-settings input[name=addressWBLED2]').val(data.addressWBLED2);
-            $('form#modbus-settings input[name=addressWBM1W2]').val(data.addressWBM1W2);
-            $('form#modbus-settings input[name=addressMTD262MB]').val(data.addressMTD262MB);
+        },
+        error: function (xhr, str) {
+            alert('Errors while loading settings');
+        }
+    });
+}
+
+function loadHallwaySettings() {
+    $.ajax({
+        type: 'GET',
+        url: '/api/settings/hallway',
+        dataType: 'json',
+        success: function (data) {
+            $('form#hallway-settings input[name=mqttCommandTopic]').val(data.mqttCommandTopic);
+            $('form#hallway-settings input[name=mqttStateTopic]').val(data.mqttStateTopic);
+            $('form#hallway-settings input[name=modbusAddressMTD262MB]').val(data.modbusAddressMTD262MB);
+            $('form#hallway-settings input[name=modbusAddressWBLED]').val(data.modbusAddressWBLED);
+            $('form#hallway-settings input[name=modbusAddressWBMS]').val(data.modbusAddressWBMS);
         },
         error: function (xhr, str) {
             alert('Errors while loading settings');
@@ -85,7 +95,8 @@ function updateWiFiStatus() {
 $(function() {
     loadSettings();
     updateWiFiStatus();
-    loadModbusSettings()
+    loadModbusSettings();
+    loadHallwaySettings();
 
     setInterval(updateWiFiStatus, 10000);
 
@@ -174,12 +185,7 @@ $(function() {
             url: '/api/settings/modbus',
             dataType: 'json',
             data: {
-                modbusSpeed: $(this).find('select[name=modbusSpeed]').val(),
-                addressWBMSW: $(this).find('input[name=addressWBMSW]').val(),
-                addressWBLED1: $(this).find('input[name=addressWBLED1]').val(),
-                addressWBLED2: $(this).find('input[name=addressWBLED2]').val(),
-                addressWBM1W2: $(this).find('input[name=addressWBM1W2]').val(),
-                addressMTD262MB: $(this).find('input[name=addressMTD262MB]').val(),
+                modbusSpeed: $(this).find('select[name=modbusSpeed]').val()
             },
             success: function (data) {
                 alert('Modbus settings successful changed. Reboot...');
@@ -193,6 +199,38 @@ $(function() {
             error: function (xhr, str) {
                 var data = JSON.parse(xhr.responseText);
                 alert('Errors while save modbus settings: ' + data.message);
+            }
+        });
+
+        return false;
+    });
+
+    $('form#hallway-settings').submit(function(event) {
+        event.preventDefault();
+
+        $.ajax({
+            type: 'POST',
+            url: '/api/settings/hallway/update',
+            dataType: 'json',
+            data: {
+                mqttCommandTopic: $(this).find('select[name=mqttCommandTopic]').val(),
+                mqttStateTopic: $(this).find('select[name=mqttStateTopic]').val(),
+                modbusAddressMTD262MB: $(this).find('select[name=modbusAddressMTD262MB]').val(),
+                modbusAddressWBLED: $(this).find('select[name=modbusAddressWBLED]').val(),
+                modbusAddressWBMS: $(this).find('select[name=modbusAddressWBMS]').val()
+            },
+            success: function (data) {
+                alert('Hallway settings successful changed. Reboot...');
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/api/reboot',
+                    dataType: 'json'
+                });
+            },
+            error: function (xhr, str) {
+                var data = JSON.parse(xhr.responseText);
+                alert('Errors while update hallway settings: ' + data.message);
             }
         });
 

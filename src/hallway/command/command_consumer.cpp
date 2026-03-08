@@ -3,7 +3,7 @@
 #include "command_consumer.h"
 #include "command.h"
 
-void CommandConsumer::consume(std::string payload)
+void Hallway::CommandConsumer::consume(std::string payload)
 {
     LOGD("command_consumer", "handle");
 
