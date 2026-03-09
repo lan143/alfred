@@ -40,6 +40,7 @@ void Handler::init()
             auto config = _configMgr->getData();
 
             entity["modbusSpeed"] = config->modbusSpeed;
+            entity["modbusAddressWBMR6C"] = config->modbusAddressWBMR6C;
         });
 
         response->write(payload.c_str());
@@ -49,12 +50,14 @@ void Handler::init()
     _server->on("/api/settings/modbus", HTTP_POST, [this](AsyncWebServerRequest *request) {
         if (
             !request->hasParam("modbusSpeed", true)
+            || !request->hasParam("modbusAddressWBMR6C", true)
         ) {
             request->send(422, "application/json", "{\"message\": \"not present modbus params in request\"}");
             return;
         }
 
         const AsyncWebParameter* modbusSpeedParam = request->getParam("modbusSpeed", true);
+        const AsyncWebParameter* modbusAddressWBMR6CParam = request->getParam("modbusAddressWBMR6C", true);
 
         int modbusSpeed;
         if (EDUtils::str2int(&modbusSpeed, modbusSpeedParam->value().c_str(), 10) != EDUtils::STR2INT_SUCCESS) {
@@ -84,7 +87,14 @@ void Handler::init()
                 return;
         }
 
+        int modbusAddressWBMR6C;
+        if (EDUtils::str2int(&modbusAddressWBMR6C, modbusAddressWBMR6CParam->value().c_str(), 10) != EDUtils::STR2INT_SUCCESS) {
+            request->send(422, "application/json", "{\"message\": \"Incorrect WB-MR6C address\"}");
+            return;
+        }
+
         _configMgr->getData()->modbusSpeed = modbusSpeed;
+        _configMgr->getData()->modbusAddressWBMR6C = modbusAddressWBMR6C;
 
         if (_configMgr->store()) {
             request->send(200, "application/json", "{}");

@@ -44,6 +44,7 @@ function loadModbusSettings() {
         dataType: 'json',
         success: function (data) {
             $('form#modbus-settings select[name=modbusSpeed]').val(data.modbusSpeed);
+            $('form#modbus-settings select[name=modbusAddressWBMR6C]').val(data.modbusAddressWBMR6C);
         },
         error: function (xhr, str) {
             alert('Errors while loading settings');
@@ -185,7 +186,8 @@ $(function() {
             url: '/api/settings/modbus',
             dataType: 'json',
             data: {
-                modbusSpeed: $(this).find('select[name=modbusSpeed]').val()
+                modbusSpeed: $(this).find('select[name=modbusSpeed]').val(),
+                modbusAddressWBMR6C: $(this).find('select[name=modbusAddressWBMR6C]').val()
             },
             success: function (data) {
                 alert('Modbus settings successful changed. Reboot...');

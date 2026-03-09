@@ -35,6 +35,7 @@ struct Config
 
     // modbus
     uint32_t modbusSpeed = 0;
+    uint8_t modbusAddressWBMR6C = 0;
 
     Hallway::Config hallway;
 };

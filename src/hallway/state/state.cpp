@@ -12,7 +12,8 @@ bool State::operator==(State& other)
         && _floorTemperature == other._floorTemperature
         && _lightLevel == other._lightLevel
         && _isHumanDetected == other._isHumanDetected
-        && _isNightModeActive == other._isNightModeActive;
+        && _isNightModeActive == other._isNightModeActive
+        && _isDoorOpen == other._isDoorOpen;
 }
 
 std::string State::marshalJSON()
@@ -40,6 +41,10 @@ std::string State::marshalJSON()
 
         if (_isNightModeActive.second) {
             entity[F("isNightModeActive")] = _isNightModeActive.first ? "true" : "false";
+        }
+
+        if (_isDoorOpen.second) {
+            entity[F("isDoorOpen")] = _isDoorOpen.first ? "true" : "false";
         }
     });
 

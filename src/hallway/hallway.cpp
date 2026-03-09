@@ -1,16 +1,20 @@
+#include "defines.h"
 #include "hallway.h"
 
 using namespace Hallway;
 
-void Hallway::Hallway::init(Config config, EDHA::Device* device)
+void Hallway::Hallway::init(Config config, EDHA::Device* device, EDWB::MR6C* mr6c)
 {
     _config = config;
+    _mr6c = mr6c;
 
     _stateProducer->init(config.mqttStateTopic);
 
     _led = _modbus->addLED(config.modbusAddressWBLED);
     _ms = _modbus->addMS(config.modbusAddressWBMS);
     _mtd262mb = _modbus->addMTD262MB(config.modbusAddressMTD262MB);
+
+    _mr6c->setInputMode(MR6C_CHANNEL_ENTRACE_DOOR, EDWB::MR6C_INPUT_MODE_DONT_USE);
 
     buildDiscovery(device);
 
@@ -33,7 +37,9 @@ void Hallway::Hallway::updateSensors()
     if ((_lastClimateUpdateTime + 10000000) < esp_timer_get_time()) { // every 10 seconds
         auto temperature = _ms->getTemperature();
         if (temperature.second) {
-            _stateMgr->getState().setTemperature(temperature.first);
+            auto filtered = _temperatureFilter->filtered(temperature.first);
+            filtered = std::round(filtered * 100.0f) / 100.0f;
+            _stateMgr->getState().setTemperature(filtered);
         } else {
             LOGE("updateSensors", "failed to get temperature");
         }
@@ -47,7 +53,8 @@ void Hallway::Hallway::updateSensors()
 
         auto floorTemperature = _ms->getOneWireTemperature(1);
         if (floorTemperature.second) {
-            _stateMgr->getState().setFloorTemperature(floorTemperature.first);
+            auto filtered = std::round(floorTemperature.first * 100.0f) / 100.0f;
+            _stateMgr->getState().setFloorTemperature(filtered);
         } else {
             LOGE("updateSensors", "failed to get one wire sensor temperature");
         }
@@ -72,6 +79,13 @@ void Hallway::Hallway::updateSensors()
             _stateMgr->getState().changeHumanDetected(humanDetected.first);
         } else {
             LOGE("updateSensors", "failed to get occupancy state");
+        }
+
+        auto isDoorClosed = _mr6c->getInputChannelState(MR6C_CHANNEL_ENTRACE_DOOR);
+        if (isDoorClosed.second) {
+            _stateMgr->getState().changeDoorOpen(!isDoorClosed.first);
+        } else {
+            LOGE("updateSensors", "failed to get door state");
         }
 
         _lastHumanDetectorUpdateTime = esp_timer_get_time();
@@ -137,4 +151,16 @@ void Hallway::Hallway::buildDiscovery(EDHA::Device* device)
         ->setPayloadOn("true")
         ->setPayloadOff("false")
         ->setDeviceClass("occupancy");
+
+    _discoveryMgr->addBinarySensor(
+        device,
+        "Entrance door",
+        "entrance_door",
+        EDUtils::formatString("entrance_door_alfred_%s", chipID)
+    )
+        ->setStateTopic(_config.mqttStateTopic)
+        ->setValueTemplate("{{ value_json.isDoorOpen }}")
+        ->setPayloadOn("true")
+        ->setPayloadOff("false")
+        ->setDeviceClass(EDHA::deviceClassBinarySensorDoor);
 }

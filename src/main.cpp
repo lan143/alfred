@@ -12,6 +12,7 @@
 #include <log/log.h>
 #include <Wire.h>
 #include <TCA9555.h>
+#include <device/wb_mr6c.h>
 
 #include "defines.h"
 #include "config.h"
@@ -71,6 +72,9 @@ void setup()
         config->hallway.modbusAddressMTD262MB = 1;
         config->hallway.modbusAddressWBLED = 2;
         config->hallway.modbusAddressWBMS = 3;
+
+        config->modbusSpeed = 9600;
+        config->modbusAddressWBMR6C = 4;
     });
     configMgr.load();
 
@@ -115,7 +119,9 @@ void setup()
         ->setName(deviceName)
         ->setManufacturer(deviceManufacturer);
 
-    hallway.init(configMgr.getData()->hallway, device);
+    auto mr6c = modbus.addMR6C(configMgr.getData()->modbusAddressWBMR6C);
+
+    hallway.init(configMgr.getData()->hallway, device, mr6c);
 
     LOGI("setup", "complete");
 }

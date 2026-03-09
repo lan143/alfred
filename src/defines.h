@@ -19,7 +19,7 @@
 #define I2CSDA 32
 #define I2CSCL 33
 
-#define EEPROM_SIZE 2048
+#define MR6C_CHANNEL_ENTRACE_DOOR 1
 
 #ifndef CONTROLLER_NAME
 #define CONTROLLER_NAME "Alfred"

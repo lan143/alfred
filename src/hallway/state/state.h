@@ -22,6 +22,7 @@ namespace Hallway
         void setLightLevel(uint16_t lightLevel) { _lightLevel = std::make_pair(lightLevel, true); }
         void changeHumanDetected(bool detected) { _isHumanDetected = std::make_pair(detected, true); }
         void changeNightModeActive(bool active) { _isNightModeActive = std::make_pair(active, true); }
+        void changeDoorOpen(bool open) { _isDoorOpen = std::make_pair(open, true); }
 
     private:
         std::pair<float_t, bool> _temperature;
@@ -31,5 +32,6 @@ namespace Hallway
         std::pair<uint16_t, bool> _lightLevel;
         std::pair<bool, bool> _isHumanDetected;
         std::pair<bool, bool> _isNightModeActive;
+        std::pair<bool, bool> _isDoorOpen;
     };
 }
