@@ -36,6 +36,8 @@ namespace Hallway
 
         void update();
 
+        void changeFrontTerraceLightState(bool enabled);
+
     private:
         void buildDiscovery(EDHA::Device* device);
         void updateSensors();
@@ -45,6 +47,7 @@ namespace Hallway
         bool _isInit = false;
 
         uint64_t _lastClimateUpdateTime = 0;
+        uint64_t _lastLightUpdateTime = 0;
         uint64_t _lastLightLevelUpdateTime = 0;
         uint64_t _lastHumanDetectorUpdateTime = 0;
 

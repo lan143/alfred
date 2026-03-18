@@ -15,6 +15,11 @@ void Hallway::Hallway::init(Config config, EDHA::Device* device, EDWB::MR6C* mr6
     _mtd262mb = _modbus->addMTD262MB(config.modbusAddressMTD262MB);
 
     _mr6c->setInputMode(MR6C_CHANNEL_ENTRACE_DOOR, EDWB::MR6C_INPUT_MODE_DONT_USE);
+    _mr6c->setInputMode(MR6C_CHANNEL_TWO, EDWB::MR6C_INPUT_MODE_DONT_USE);
+    _mr6c->setInputMode(MR6C_CHANNEL_THREE, EDWB::MR6C_INPUT_MODE_DONT_USE);
+    _mr6c->setInputMode(MR6C_CHANNEL_TERRACE_LIGHT_BUTTON, EDWB::MR6C_INPUT_MODE_BUTTON_WITHOUT_LOCKING);
+    _mr6c->setInputMode(MR6C_CHANNEL_FIVE, EDWB::MR6C_INPUT_MODE_DONT_USE);
+    _mr6c->setInputMode(MR6C_CHANNEL_SIX, EDWB::MR6C_INPUT_MODE_DONT_USE);
 
     buildDiscovery(device);
 
@@ -30,6 +35,15 @@ void Hallway::Hallway::update()
 
     updateSensors();
     _stateMgr->loop();
+}
+
+void Hallway::Hallway::changeFrontTerraceLightState(bool enabled)
+{
+    if (!_mr6c->setRelayChannelState(MR6C_CHANNEL_TERRACE_LIGHT_BUTTON, enabled)) {
+        LOGE("changeFrontTerraceLightState", "failed to change relay state");
+    }
+
+    _stateMgr->getState().changeFrontTerraceLightEnabled(enabled);
 }
 
 void Hallway::Hallway::updateSensors()
@@ -89,6 +103,17 @@ void Hallway::Hallway::updateSensors()
         }
 
         _lastHumanDetectorUpdateTime = esp_timer_get_time();
+    }
+
+    if ((_lastLightUpdateTime + 500000) < esp_timer_get_time()) { // every 0.5 second
+        auto lightEnabled = _mr6c->getRelayChannelState(MR6C_CHANNEL_TERRACE_LIGHT_BUTTON);
+        if (lightEnabled.second) {
+            _stateMgr->getState().changeFrontTerraceLightEnabled(lightEnabled.first);
+        } else {
+            LOGE("updateSensors", "failed to get terrace light relay state");
+        }
+
+        _lastLightUpdateTime = esp_timer_get_time();
     }
 }
 
@@ -163,4 +188,16 @@ void Hallway::Hallway::buildDiscovery(EDHA::Device* device)
         ->setPayloadOn("true")
         ->setPayloadOff("false")
         ->setDeviceClass(EDHA::deviceClassBinarySensorDoor);
+
+    _discoveryMgr->addLight(
+        device,
+        "Front terrace light",
+        "frontTerraceLight",
+        EDUtils::formatString("front_terrace_light_alfred_%s", EDUtils::getChipID())
+    )
+        ->setCommandTopic(_config.mqttCommandTopic)
+        ->setStateTopic(_config.mqttStateTopic)
+        ->setStateValueTemplate("{{ value_json.frontTerraceLightEnabled }}")
+        ->setPayloadOn("stateTerraceLightOn")
+        ->setPayloadOff("stateTerraceLightOff");
 }

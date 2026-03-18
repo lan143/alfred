@@ -16,6 +16,7 @@
 
 #include "defines.h"
 #include "config.h"
+#include "hallway/command/command_consumer.h"
 #include "hallway/hallway.h"
 #include "web/handler.h"
 
@@ -30,6 +31,7 @@ EDHealthCheck::HealthCheck healthCheck;
 EDHA::DiscoveryMgr discoveryMgr;
 
 Hallway::Hallway hallway(&discoveryMgr, &mqtt, &modbus);
+Hallway::CommandConsumer hallwayCommandConsumer(&hallway);
 
 Handler handler(&configMgr, &networkMgr, &healthCheck);
 
@@ -122,6 +124,9 @@ void setup()
     auto mr6c = modbus.addMR6C(configMgr.getData()->modbusAddressWBMR6C);
 
     hallway.init(configMgr.getData()->hallway, device, mr6c);
+
+    hallwayCommandConsumer.init(configMgr.getData()->hallway.mqttCommandTopic);
+    mqtt.subscribe(&hallwayCommandConsumer);
 
     LOGI("setup", "complete");
 }

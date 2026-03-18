@@ -24,6 +24,8 @@ namespace Hallway
         void changeNightModeActive(bool active) { _isNightModeActive = std::make_pair(active, true); }
         void changeDoorOpen(bool open) { _isDoorOpen = std::make_pair(open, true); }
 
+        void changeFrontTerraceLightEnabled(bool enabled) { _frontTerraceLightEnabled = std::make_pair(enabled, true); }
+
     private:
         std::pair<float_t, bool> _temperature;
         std::pair<float_t, bool> _humidity;
@@ -33,5 +35,7 @@ namespace Hallway
         std::pair<bool, bool> _isHumanDetected;
         std::pair<bool, bool> _isNightModeActive;
         std::pair<bool, bool> _isDoorOpen;
+
+        std::pair<bool, bool> _frontTerraceLightEnabled;
     };
 }
