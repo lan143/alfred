@@ -18,6 +18,7 @@
 #include "config.h"
 #include "hallway/command/command_consumer.h"
 #include "hallway/hallway.h"
+#include "living_room/living_room.h"
 #include "web/handler.h"
 
 TCA9555 tca9555(0x20, &Wire);
@@ -32,6 +33,8 @@ EDHA::DiscoveryMgr discoveryMgr;
 
 Hallway::Hallway hallway(&discoveryMgr, &mqtt, &modbus);
 Hallway::CommandConsumer hallwayCommandConsumer(&hallway);
+
+LivingRoom::LivingRoom livingRoom(&discoveryMgr, &mqtt, &modbus);
 
 Handler handler(&configMgr, &networkMgr, &healthCheck);
 
@@ -74,6 +77,10 @@ void setup()
         config->hallway.modbusAddressMTD262MB = 1;
         config->hallway.modbusAddressWBLED = 2;
         config->hallway.modbusAddressWBMS = 3;
+
+        config->livingRoom.modbusAddressMTD262MB = 5;
+        config->livingRoom.modbusAddressWBMSW = 6;
+        snprintf(config->livingRoom.mqttTopicPrefix, MQTT_TOPIC_LEN, "alfred/%s/living_room", EDUtils::getChipID());
 
         config->modbusSpeed = 9600;
         config->modbusAddressWBMR6C = 4;
@@ -128,6 +135,8 @@ void setup()
     hallwayCommandConsumer.init(configMgr.getData()->hallway.mqttCommandTopic);
     mqtt.subscribe(&hallwayCommandConsumer);
 
+    livingRoom.init(configMgr.getData()->livingRoom, device, mr6c);
+
     LOGI("setup", "complete");
 }
 
@@ -139,4 +148,5 @@ void loop()
     healthCheck.loop();
     networkLogger.update();
     hallway.update();
+    livingRoom.update();
 }

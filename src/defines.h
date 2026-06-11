@@ -19,16 +19,32 @@
 #define I2CSDA 32
 #define I2CSCL 33
 
-#define MR6C_CHANNEL_ENTRACE_DOOR 1
-#define MR6C_CHANNEL_TWO 2
-#define MR6C_CHANNEL_THREE 3
-#define MR6C_CHANNEL_TERRACE_LIGHT_BUTTON 4
-#define MR6C_CHANNEL_FIVE 5
-#define MR6C_CHANNEL_SIX 6
+#define MR6C_CHANNEL_ENTRACE_DOOR              1
+#define MR6C_CHANNEL_TWO                       2
+#define MR6C_CHANNEL_THREE                     3
+#define MR6C_CHANNEL_TERRACE_LIGHT_BUTTON      4
+#define MR6C_CHANNEL_LIVING_ROOM_LIGHT_SWITCH  5
+#define MR6C_CHANNEL_SIX                       6
+
+#define MR6C_RELAY_CHANNEL_POWER_SUPPLY        1
+#define MR6C_RELAY_CHANNEL_FRONT_TERRACE_LIGHT 4
+#define MR6C_RELAY_CHANNEL_LIVING_ROOM_LIGHT   5
+#define MR6C_RELAY_CHANNEL_LIVING_ROOM_GARLAND 6
 
 #ifndef CONTROLLER_NAME
 #define CONTROLLER_NAME "Alfred"
 #endif
+
+#define WIFI_SSID_LEN 32 + 1
+#define WIFI_PWD_LEN 64 + 1
+
+#define HOST_LEN 64
+#define MQTT_DEFAULT_PORT 1883
+
+#define MQTT_LOGIN_LEN 32
+#define MQTT_PASSWORD_LEN 32
+#define MQTT_TOPIC_LEN 64
+
 
 const char deviceName[] = CONTROLLER_NAME;
 const char deviceModel[] = "WB-MGE";

@@ -11,6 +11,7 @@
 #include <wirenboard.h>
 
 #include "hallway_config.h"
+#include "hallway_state.h"
 #include "state/producer.h"
 #include "state/state.h"
 
@@ -38,13 +39,26 @@ namespace Hallway
 
         void changeFrontTerraceLightState(bool enabled);
 
+        void changeHallwayLightState(bool enabled);
+        void setHallwayLightBrightness(uint8_t brightness, bool updateLight);
+        void setHallwayLightTempColor(uint16_t tempColor);
+
     private:
         void buildDiscovery(EDHA::Device* device);
         void updateSensors();
+        void updateLight();
+
+        void changeStateInternal(bool enabled, bool manual);
+        void updateHallwayLight();
+
+        void saveState();
 
     private:
         Config _config;
         bool _isInit = false;
+
+        StorageState _state;
+        bool _manual = false;
 
         uint64_t _lastClimateUpdateTime = 0;
         uint64_t _lastLightUpdateTime = 0;
@@ -52,6 +66,10 @@ namespace Hallway
         uint64_t _lastHumanDetectorUpdateTime = 0;
 
         GKalman* _temperatureFilter = nullptr;
+
+        uint64_t _lastCheckTime = 0;
+        uint64_t _lastHumanDetectTime = 0;
+        uint64_t _lastManualControlTime = 0;
 
     private:
         EDHA::DiscoveryMgr* _discoveryMgr = nullptr;

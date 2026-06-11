@@ -20,11 +20,17 @@ namespace Hallway
         void setFloorTemperature(float_t floorTemperature) { _floorTemperature = std::make_pair(floorTemperature, true); }
 
         void setLightLevel(uint16_t lightLevel) { _lightLevel = std::make_pair(lightLevel, true); }
+
+        std::pair<bool, bool> isHumanDetected() const { return _isHumanDetected; }
         void changeHumanDetected(bool detected) { _isHumanDetected = std::make_pair(detected, true); }
         void changeNightModeActive(bool active) { _isNightModeActive = std::make_pair(active, true); }
         void changeDoorOpen(bool open) { _isDoorOpen = std::make_pair(open, true); }
 
         void changeFrontTerraceLightEnabled(bool enabled) { _frontTerraceLightEnabled = std::make_pair(enabled, true); }
+
+        void changeHallwayLightEnabled(bool enabled) { _hallwayLightEnabled = std::make_pair(enabled, true); }
+        void setHallwayLightBrightness(uint8_t brightness) { _hallwayLightBrightness = std::make_pair(brightness, true); }
+        void setHallwayLightTempColor(uint16_t tempColor) { _hallwayLightTempColor = std::make_pair(tempColor, true); }
 
     private:
         std::pair<float_t, bool> _temperature;
@@ -37,5 +43,9 @@ namespace Hallway
         std::pair<bool, bool> _isDoorOpen;
 
         std::pair<bool, bool> _frontTerraceLightEnabled;
+
+        std::pair<bool, bool> _hallwayLightEnabled;
+        std::pair<uint8_t, bool> _hallwayLightBrightness;
+        std::pair<uint16_t, bool> _hallwayLightTempColor;
     };
 }

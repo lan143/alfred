@@ -6,19 +6,11 @@
 #include <network/network_config.h>
 #include <log/log_config.h>
 
+#include "defines.h"
 #include "hallway/hallway_config.h"
+#include "living_room/config.h"
 
-#define CURRENT_VERSION 1
-
-#define WIFI_SSID_LEN 32 + 1
-#define WIFI_PWD_LEN 64 + 1
-
-#define HOST_LEN 64
-#define MQTT_DEFAULT_PORT 1883
-
-#define MQTT_LOGIN_LEN 32
-#define MQTT_PASSWORD_LEN 32
-#define MQTT_TOPIC_LEN 64
+#define CURRENT_VERSION 2
 
 struct Config
 {
@@ -38,4 +30,5 @@ struct Config
     uint8_t modbusAddressWBMR6C = 0;
 
     Hallway::Config hallway;
+    LivingRoom::Config livingRoom;
 };

@@ -187,7 +187,7 @@ $(function() {
             dataType: 'json',
             data: {
                 modbusSpeed: $(this).find('select[name=modbusSpeed]').val(),
-                modbusAddressWBMR6C: $(this).find('select[name=modbusAddressWBMR6C]').val()
+                modbusAddressWBMR6C: $(this).find('input[name=modbusAddressWBMR6C]').val()
             },
             success: function (data) {
                 alert('Modbus settings successful changed. Reboot...');
@@ -215,11 +215,11 @@ $(function() {
             url: '/api/settings/hallway/update',
             dataType: 'json',
             data: {
-                mqttCommandTopic: $(this).find('select[name=mqttCommandTopic]').val(),
-                mqttStateTopic: $(this).find('select[name=mqttStateTopic]').val(),
-                modbusAddressMTD262MB: $(this).find('select[name=modbusAddressMTD262MB]').val(),
-                modbusAddressWBLED: $(this).find('select[name=modbusAddressWBLED]').val(),
-                modbusAddressWBMS: $(this).find('select[name=modbusAddressWBMS]').val()
+                mqttCommandTopic: $(this).find('input[name=mqttCommandTopic]').val(),
+                mqttStateTopic: $(this).find('input[name=mqttStateTopic]').val(),
+                modbusAddressMTD262MB: $(this).find('input[name=modbusAddressMTD262MB]').val(),
+                modbusAddressWBLED: $(this).find('input[name=modbusAddressWBLED]').val(),
+                modbusAddressWBMS: $(this).find('input[name=modbusAddressWBMS]').val()
             },
             success: function (data) {
                 alert('Hallway settings successful changed. Reboot...');
