@@ -185,6 +185,31 @@
                             </div>
                         </form>
                     </div>
+
+                    <div class="col-sm-6">
+                        <h1>Living Room settings</h1>
+
+                        <form id="living-room-settings">
+                            <div class="mb-3">
+                                <label for="mqttTopicPrefix" class="form-label">MQTT Topic Prefix</label>
+                                <input type="text" class="form-control" name="mqttTopicPrefix" id="mqttTopicPrefix">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="modbusAddressMTD262MB" class="form-label">Address MTD262MB</label>
+                                <input type="number" class="form-control" name="modbusAddressMTD262MB" id="modbusAddressMTD262MB">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="modbusAddressWBMSW" class="form-label">Address WB-MSW</label>
+                                <input type="number" class="form-control" name="modbusAddressWBMSW" id="modbusAddressWBMSW">
+                            </div>
+
+                            <div class="mb-12">
+                                <button type="submit" class="btn btn-primary">Save</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </main>

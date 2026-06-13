@@ -44,7 +44,7 @@ function loadModbusSettings() {
         dataType: 'json',
         success: function (data) {
             $('form#modbus-settings select[name=modbusSpeed]').val(data.modbusSpeed);
-            $('form#modbus-settings select[name=modbusAddressWBMR6C]').val(data.modbusAddressWBMR6C);
+            $('form#modbus-settings input[name=modbusAddressWBMR6C]').val(data.modbusAddressWBMR6C);
         },
         error: function (xhr, str) {
             alert('Errors while loading settings');
@@ -66,6 +66,22 @@ function loadHallwaySettings() {
         },
         error: function (xhr, str) {
             alert('Errors while loading settings');
+        }
+    });
+}
+
+function loadLivingRoomSettings() {
+    $.ajax({
+        type: 'GET',
+        url: '/api/settings/living_room',
+        dataType: 'json',
+        success: function (data) {
+            $('form#living-room-settings input[name=mqttTopicPrefix]').val(data.mqttTopicPrefix);
+            $('form#living-room-settings input[name=modbusAddressMTD262MB]').val(data.modbusAddressMTD262MB);
+            $('form#living-room-settings input[name=modbusAddressWBMSW]').val(data.modbusAddressWBMSW);
+        },
+        error: function (xhr, str) {
+            alert('Errors while loading living room settings');
         }
     });
 }
@@ -98,6 +114,7 @@ $(function() {
     updateWiFiStatus();
     loadModbusSettings();
     loadHallwaySettings();
+    loadLivingRoomSettings();
 
     setInterval(updateWiFiStatus, 10000);
 
@@ -233,6 +250,36 @@ $(function() {
             error: function (xhr, str) {
                 var data = JSON.parse(xhr.responseText);
                 alert('Errors while update hallway settings: ' + data.message);
+            }
+        });
+
+        return false;
+    });
+
+    $('form#living-room-settings').submit(function(event) {
+        event.preventDefault();
+
+        $.ajax({
+            type: 'POST',
+            url: '/api/settings/living_room/update',
+            dataType: 'json',
+            data: {
+                mqttTopicPrefix: $(this).find('input[name=mqttTopicPrefix]').val(),
+                modbusAddressMTD262MB: $(this).find('input[name=modbusAddressMTD262MB]').val(),
+                modbusAddressWBMSW: $(this).find('input[name=modbusAddressWBMSW]').val()
+            },
+            success: function (data) {
+                alert('Living room settings successful changed. Reboot...');
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/api/reboot',
+                    dataType: 'json'
+                });
+            },
+            error: function (xhr, str) {
+                var data = JSON.parse(xhr.responseText);
+                alert('Errors while update living room settings: ' + data.message);
             }
         });
 

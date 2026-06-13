@@ -180,6 +180,63 @@ void Handler::init()
         }
     });
 
+    _server->on("/api/settings/living_room", HTTP_GET, [this](AsyncWebServerRequest *request) {
+        AsyncResponseStream *response = request->beginResponseStream("application/json");
+
+        std::string payload = EDUtils::buildJson([this](JsonObject entity) {
+            auto config = _configMgr->getData();
+
+            entity["mqttTopicPrefix"] = config->livingRoom.mqttTopicPrefix;
+            entity["modbusAddressMTD262MB"] = config->livingRoom.modbusAddressMTD262MB;
+            entity["modbusAddressWBMSW"] = config->livingRoom.modbusAddressWBMSW;
+        });
+
+        response->write(payload.c_str());
+        request->send(response);
+    });
+
+    _server->on("/api/settings/living_room/update", HTTP_POST, [this](AsyncWebServerRequest *request) {
+        if (
+            !request->hasParam("mqttTopicPrefix", true)
+            || !request->hasParam("modbusAddressMTD262MB", true)
+            || !request->hasParam("modbusAddressWBMSW", true)
+        ) {
+            request->send(422, "application/json", "{\"message\": \"not present required fields in request\"}");
+            return;
+        }
+
+        const AsyncWebParameter* mqttTopicPrefixParam = request->getParam("mqttTopicPrefix", true);
+        const AsyncWebParameter* modbusAddressMTD262MBParam = request->getParam("modbusAddressMTD262MB", true);
+        const AsyncWebParameter* modbusAddressWBMSWParam = request->getParam("modbusAddressWBMSW", true);
+
+        if (mqttTopicPrefixParam->value().length() > MQTT_TOPIC_LEN-1) {
+            request->send(422, "application/json", "{\"message\": \"MQTT topic prefix lenght more 64 symbols\"}");
+            return;
+        }
+
+        int modbusAddressMTD262MB;
+        if (EDUtils::str2int(&modbusAddressMTD262MB, modbusAddressMTD262MBParam->value().c_str(), 10) != EDUtils::STR2INT_SUCCESS) {
+            request->send(422, "application/json", "{\"message\": \"Incorrect MTD262MB address\"}");
+            return;
+        }
+
+        int modbusAddressWBMSW;
+        if (EDUtils::str2int(&modbusAddressWBMSW, modbusAddressWBMSWParam->value().c_str(), 10) != EDUtils::STR2INT_SUCCESS) {
+            request->send(422, "application/json", "{\"message\": \"Incorrect WB-MSW address\"}");
+            return;
+        }
+
+        std::strcpy(_configMgr->getData()->livingRoom.mqttTopicPrefix, mqttTopicPrefixParam->value().c_str());
+        _configMgr->getData()->livingRoom.modbusAddressMTD262MB = modbusAddressMTD262MB;
+        _configMgr->getData()->livingRoom.modbusAddressWBMSW = modbusAddressWBMSW;
+
+        if (_configMgr->store()) {
+            request->send(200, "application/json", "{}");
+        } else {
+            request->send(500, "application/json", "{\"message\": \"Failed to update config\"}");
+        }
+    });
+
     _server->on("/api/settings", HTTP_GET, [this](AsyncWebServerRequest *request) {
         AsyncResponseStream *response = request->beginResponseStream("application/json");
 
