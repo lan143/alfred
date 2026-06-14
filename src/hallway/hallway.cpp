@@ -23,28 +23,13 @@ void Hallway::Hallway::init(Config config, EDHA::Device* device, EDWB::MR6C* mr6
     _ms = _modbus->addMS(config.modbusAddressWBMS);
     _mtd262mb = _modbus->addMTD262MB(config.modbusAddressMTD262MB);
 
-    if (!_mr6c->setInputMode(MR6C_CHANNEL_ENTRACE_DOOR, EDWB::MR6C_INPUT_MODE_DONT_USE)) {
-        LOGE("init", "failed to set input mode for channel MR6C_CHANNEL_ENTRACE_DOOR");
+    if (!_mr6c->setInputMode(MR6C_CHANNEL_LIVING_ROOM_DOOR, EDWB::MR6C_INPUT_MODE_FREQUENCY)) {
+        LOGE("init", "failed to set input mode for channel MR6C_CHANNEL_LIVING_ROOM_DOOR");
     }
 
-    if (!_mr6c->setInputMode(MR6C_CHANNEL_TWO, EDWB::MR6C_INPUT_MODE_DONT_USE)) {
-        LOGE("init", "failed to set input mode for channel MR6C_CHANNEL_TWO");
+    if (!_mr6c->setInputMode(MR6C_CHANNEL_LIVING_ROOM_WINDOW, EDWB::MR6C_INPUT_MODE_FREQUENCY)) {
+        LOGE("init", "failed to set input mode for channel MR6C_CHANNEL_LIVING_ROOM_WINDOW");
     }
-
-    if (!_mr6c->setInputMode(MR6C_CHANNEL_THREE, EDWB::MR6C_INPUT_MODE_DONT_USE)) {
-        LOGE("init", "failed to set input mode for channel MR6C_CHANNEL_THREE");
-    }
-
-    if (!_mr6c->setInputMode(MR6C_CHANNEL_TERRACE_LIGHT_BUTTON, EDWB::MR6C_INPUT_MODE_BUTTON_WITHOUT_LOCKING)) {
-        LOGE("init", "failed to set input mode for channel MR6C_CHANNEL_TERRACE_LIGHT_BUTTON");
-    }
-
-    _led->setMode(EDWB::LED_MODE_CCTWW);
-    _led->setInputMode(1, true);
-    _led->setSafeMode(1, EDWB::SAFE_MODE_DONT_BLOCK_INPUT);
-    _led->setInputActionRaw(1, EDWB::INPUT_TYPE_SHORT_CLICK, 0x3007); // switch cct1
-    _led->setInputActionRaw(1, EDWB::INPUT_TYPE_LONG_CLICK, 0xB008); // change cct1 brightness
-    _mr6c->setRelayChannelState(MR6C_RELAY_CHANNEL_POWER_SUPPLY, true); // tmp always enable led power supply
 
     _temperature = new EDCommon::Sensor::WBMSTemperature(_ms);
     _temperature->init(2, 10000, {
@@ -67,7 +52,7 @@ void Hallway::Hallway::init(Config config, EDHA::Device* device, EDWB::MR6C* mr6
     });
 
     _floorTemperature = new EDCommon::Sensor::WBMSOneWireTemperature(1, _ms);
-    _humidity->init(2, 10000, {
+    _floorTemperature->init(2, 10000, {
         EDCommon::Sensor::withMQTT(
             _mqtt,
             config.mqttTopicPrefix,
@@ -118,7 +103,7 @@ void Hallway::Hallway::init(Config config, EDHA::Device* device, EDWB::MR6C* mr6
     _hallwayLight = hallwayLight;
 
     auto frontTerraceLightRelay = new EDCommon::Relay::WBMR6C(_mr6c);
-    frontTerraceLightRelay->init(MR6C_RELAY_CHANNEL_FRONT_TERRACE_LIGHT, {});
+    frontTerraceLightRelay->init(MR6C_RELAY_CHANNEL_FRONT_TERRACE_LIGHT, MR6C_CHANNEL_TERRACE_LIGHT_BUTTON, {});
     _frontTerraceLight = new EDCommon::Light::Relay(frontTerraceLightRelay);
     _frontTerraceLight->init({
         EDCommon::Light::withMQTT(
@@ -130,7 +115,7 @@ void Hallway::Hallway::init(Config config, EDHA::Device* device, EDWB::MR6C* mr6
     });
 
     _lightAutomation = new EDCommon::Automation::Light(_hallwayLight, nullptr, _humanDetector, _lightLevel);
-    _lightAutomation->init("living_room_light_state.bin", {
+    _lightAutomation->init("/hallway_light_state.bin", {
         EDCommon::Automation::withMQTT(
             _mqtt,
             config.mqttTopicPrefix,

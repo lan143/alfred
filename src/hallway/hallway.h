@@ -20,7 +20,11 @@ namespace Hallway
     class Hallway
     {
     public:
-        Hallway(EDHA::DiscoveryMgr* discoveryMgr, EDMQTT::MQTT* mqtt, EDWB::WirenBoard* modbus) : _discoveryMgr(discoveryMgr), _modbus(modbus) { }
+        Hallway(
+            EDHA::DiscoveryMgr* discoveryMgr,
+            EDMQTT::MQTT* mqtt,
+            EDWB::WirenBoard* modbus
+        ) : _discoveryMgr(discoveryMgr), _mqtt(mqtt), _modbus(modbus) { }
 
         void init(Config config, EDHA::Device* device, EDWB::MR6C* mr6c);
         void update();

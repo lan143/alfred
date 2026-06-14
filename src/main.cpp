@@ -127,6 +127,7 @@ void setup()
         ->setManufacturer(deviceManufacturer);
 
     auto mr6c = modbus.addMR6C(configMgr.getData()->modbusAddressWBMR6C);
+    mr6c->setRelayChannelState(MR6C_RELAY_CHANNEL_POWER_SUPPLY, true); // tmp always enable led power supply
 
     hallway.init(configMgr.getData()->hallway, device, mr6c);
     livingRoom.init(configMgr.getData()->livingRoom, device, mr6c);

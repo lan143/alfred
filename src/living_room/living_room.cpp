@@ -11,10 +11,6 @@ using namespace LivingRoom;
 
 void LivingRoom::LivingRoom::init(Config config, EDHA::Device* device, EDWB::MR6C* mr6c)
 {
-    if (!mr6c->setInputMode(MR6C_CHANNEL_LIVING_ROOM_LIGHT_SWITCH, EDWB::MR6C_INPUT_MODE_BUTTON_WITHOUT_LOCKING)) {
-        LOGE("init", "failed to set input mode for channel MR6C_CHANNEL_FIVE");
-    }
-
     if (!mr6c->setInputMode(MR6C_CHANNEL_SIX, EDWB::MR6C_INPUT_MODE_FREQUENCY)) {
         LOGE("init", "failed to set input mode for channel MR6C_CHANNEL_SIX");
     }
@@ -83,7 +79,7 @@ void LivingRoom::LivingRoom::init(Config config, EDHA::Device* device, EDWB::MR6
     });
 
     auto livingRoomRelay = new EDCommon::Relay::WBMR6C(mr6c);
-    livingRoomRelay->init(MR6C_RELAY_CHANNEL_LIVING_ROOM_LIGHT, {});
+    livingRoomRelay->init(MR6C_RELAY_CHANNEL_LIVING_ROOM_LIGHT, MR6C_CHANNEL_LIVING_ROOM_LIGHT_SWITCH, {});
     _livingRoomLight = new EDCommon::Light::Relay(livingRoomRelay);
     _livingRoomLight->init({
         EDCommon::Light::withMQTT(
@@ -96,7 +92,7 @@ void LivingRoom::LivingRoom::init(Config config, EDHA::Device* device, EDWB::MR6
     });
 
     auto garlandRelay = new EDCommon::Relay::WBMR6C(mr6c);
-    garlandRelay->init(MR6C_RELAY_CHANNEL_LIVING_ROOM_GARLAND, {});
+    garlandRelay->init(MR6C_RELAY_CHANNEL_LIVING_ROOM_GARLAND, -1, {});
     _livingRoomGarland = new EDCommon::Light::Relay(garlandRelay);
     _livingRoomGarland->init({
         EDCommon::Light::withMQTT(
@@ -109,7 +105,7 @@ void LivingRoom::LivingRoom::init(Config config, EDHA::Device* device, EDWB::MR6
     });
 
     _lightAutomation = new EDCommon::Automation::Light(_livingRoomLight, nullptr, _humanDetector, _lightLevel);
-    _lightAutomation->init("living_room_light_state.bin", {
+    _lightAutomation->init("/living_room_light_state.bin", {
         EDCommon::Automation::withMQTT(
             _mqtt,
             config.mqttTopicPrefix,
