@@ -58,8 +58,7 @@ function loadHallwaySettings() {
         url: '/api/settings/hallway',
         dataType: 'json',
         success: function (data) {
-            $('form#hallway-settings input[name=mqttCommandTopic]').val(data.mqttCommandTopic);
-            $('form#hallway-settings input[name=mqttStateTopic]').val(data.mqttStateTopic);
+            $('form#hallway-settings input[name=mqttTopicPrefix]').val(data.mqttTopicPrefix);
             $('form#hallway-settings input[name=modbusAddressMTD262MB]').val(data.modbusAddressMTD262MB);
             $('form#hallway-settings input[name=modbusAddressWBLED]').val(data.modbusAddressWBLED);
             $('form#hallway-settings input[name=modbusAddressWBMS]').val(data.modbusAddressWBMS);
@@ -79,6 +78,7 @@ function loadLivingRoomSettings() {
             $('form#living-room-settings input[name=mqttTopicPrefix]').val(data.mqttTopicPrefix);
             $('form#living-room-settings input[name=modbusAddressMTD262MB]').val(data.modbusAddressMTD262MB);
             $('form#living-room-settings input[name=modbusAddressWBMSW]').val(data.modbusAddressWBMSW);
+            $('form#living-room-settings input[name=modbusAddressWBLED]').val(data.modbusAddressWBLED);
         },
         error: function (xhr, str) {
             alert('Errors while loading living room settings');
@@ -232,8 +232,7 @@ $(function() {
             url: '/api/settings/hallway/update',
             dataType: 'json',
             data: {
-                mqttCommandTopic: $(this).find('input[name=mqttCommandTopic]').val(),
-                mqttStateTopic: $(this).find('input[name=mqttStateTopic]').val(),
+                mqttTopicPrefix: $(this).find('input[name=mqttTopicPrefix]').val(),
                 modbusAddressMTD262MB: $(this).find('input[name=modbusAddressMTD262MB]').val(),
                 modbusAddressWBLED: $(this).find('input[name=modbusAddressWBLED]').val(),
                 modbusAddressWBMS: $(this).find('input[name=modbusAddressWBMS]').val()
@@ -266,7 +265,8 @@ $(function() {
             data: {
                 mqttTopicPrefix: $(this).find('input[name=mqttTopicPrefix]').val(),
                 modbusAddressMTD262MB: $(this).find('input[name=modbusAddressMTD262MB]').val(),
-                modbusAddressWBMSW: $(this).find('input[name=modbusAddressWBMSW]').val()
+                modbusAddressWBMSW: $(this).find('input[name=modbusAddressWBMSW]').val(),
+                modbusAddressWBLED: $(this).find('input[name=modbusAddressWBLED]').val()
             },
             success: function (data) {
                 alert('Living room settings successful changed. Reboot...');

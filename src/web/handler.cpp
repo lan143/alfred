@@ -109,8 +109,7 @@ void Handler::init()
         std::string payload = EDUtils::buildJson([this](JsonObject entity) {
             auto config = _configMgr->getData();
 
-            entity["mqttCommandTopic"] = config->hallway.mqttCommandTopic;
-            entity["mqttStateTopic"] = config->hallway.mqttStateTopic;
+            entity["mqttTopicPrefix"] = config->hallway.mqttTopicPrefix;
 
             entity["modbusAddressMTD262MB"] = config->hallway.modbusAddressMTD262MB;
             entity["modbusAddressWBLED"] = config->hallway.modbusAddressWBLED;
@@ -123,8 +122,7 @@ void Handler::init()
 
     _server->on("/api/settings/hallway/update", HTTP_POST, [this](AsyncWebServerRequest *request) {
         if (
-            !request->hasParam("mqttCommandTopic", true)
-            || !request->hasParam("mqttStateTopic", true)
+            !request->hasParam("mqttTopicPrefix", true)
             || !request->hasParam("modbusAddressMTD262MB", true)
             || !request->hasParam("modbusAddressWBLED", true)
             || !request->hasParam("modbusAddressWBMS", true)
@@ -133,19 +131,13 @@ void Handler::init()
             return;
         }
 
-        const AsyncWebParameter* mqttCommandTopicParam = request->getParam("mqttCommandTopic", true);
-        const AsyncWebParameter* mqttStateTopicParam = request->getParam("mqttStateTopic", true);
+        const AsyncWebParameter* mqttTopicPrefixParam = request->getParam("mqttTopicPrefix", true);
         const AsyncWebParameter* modbusAddressMTD262MBParam = request->getParam("modbusAddressMTD262MB", true);
         const AsyncWebParameter* modbusAddressWBLEDParam = request->getParam("modbusAddressWBLED", true);
         const AsyncWebParameter* modbusAddressWBMSParam = request->getParam("modbusAddressWBMS", true);
 
-        if (mqttCommandTopicParam->value().length() > MQTT_TOPIC_LEN-1) {
-            request->send(422, "application/json", "{\"message\": \"WiFi SSID lenght more 64 symbols\"}");
-            return;
-        }
-
-        if (mqttStateTopicParam->value().length() > MQTT_TOPIC_LEN-1) {
-            request->send(422, "application/json", "{\"message\": \"WiFi SSID lenght more 64 symbols\"}");
+        if (mqttTopicPrefixParam->value().length() > MQTT_TOPIC_LEN-1) {
+            request->send(422, "application/json", "{\"message\": \"MQTT topic prefix more that 64 symbols\"}");
             return;
         }
 
@@ -167,8 +159,7 @@ void Handler::init()
             return;
         }
 
-        std::strcpy(_configMgr->getData()->hallway.mqttCommandTopic, mqttCommandTopicParam->value().c_str());
-        std::strcpy(_configMgr->getData()->hallway.mqttStateTopic, mqttStateTopicParam->value().c_str());
+        std::strcpy(_configMgr->getData()->hallway.mqttTopicPrefix, mqttTopicPrefixParam->value().c_str());
         _configMgr->getData()->hallway.modbusAddressMTD262MB = modbusAddressMTD262MB;
         _configMgr->getData()->hallway.modbusAddressWBLED = modbusAddressWBLED;
         _configMgr->getData()->hallway.modbusAddressWBMS = modbusAddressWBMS;
@@ -189,6 +180,7 @@ void Handler::init()
             entity["mqttTopicPrefix"] = config->livingRoom.mqttTopicPrefix;
             entity["modbusAddressMTD262MB"] = config->livingRoom.modbusAddressMTD262MB;
             entity["modbusAddressWBMSW"] = config->livingRoom.modbusAddressWBMSW;
+            entity["modbusAddressWBLED"] = config->livingRoom.modbusAddressWBLED;
         });
 
         response->write(payload.c_str());
@@ -200,6 +192,7 @@ void Handler::init()
             !request->hasParam("mqttTopicPrefix", true)
             || !request->hasParam("modbusAddressMTD262MB", true)
             || !request->hasParam("modbusAddressWBMSW", true)
+            || !request->hasParam("modbusAddressWBLED", true)
         ) {
             request->send(422, "application/json", "{\"message\": \"not present required fields in request\"}");
             return;
@@ -208,6 +201,7 @@ void Handler::init()
         const AsyncWebParameter* mqttTopicPrefixParam = request->getParam("mqttTopicPrefix", true);
         const AsyncWebParameter* modbusAddressMTD262MBParam = request->getParam("modbusAddressMTD262MB", true);
         const AsyncWebParameter* modbusAddressWBMSWParam = request->getParam("modbusAddressWBMSW", true);
+        const AsyncWebParameter* modbusAddressWBLEDParam = request->getParam("modbusAddressWBLED", true);
 
         if (mqttTopicPrefixParam->value().length() > MQTT_TOPIC_LEN-1) {
             request->send(422, "application/json", "{\"message\": \"MQTT topic prefix lenght more 64 symbols\"}");
@@ -226,9 +220,16 @@ void Handler::init()
             return;
         }
 
+        int modbusAddressWBLED;
+        if (EDUtils::str2int(&modbusAddressWBLED, modbusAddressWBLEDParam->value().c_str(), 10) != EDUtils::STR2INT_SUCCESS) {
+            request->send(422, "application/json", "{\"message\": \"Incorrect WB-MSW address\"}");
+            return;
+        }
+
         std::strcpy(_configMgr->getData()->livingRoom.mqttTopicPrefix, mqttTopicPrefixParam->value().c_str());
         _configMgr->getData()->livingRoom.modbusAddressMTD262MB = modbusAddressMTD262MB;
         _configMgr->getData()->livingRoom.modbusAddressWBMSW = modbusAddressWBMSW;
+        _configMgr->getData()->livingRoom.modbusAddressWBLED = modbusAddressWBLED;
 
         if (_configMgr->store()) {
             request->send(200, "application/json", "{}");

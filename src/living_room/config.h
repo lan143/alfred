@@ -12,5 +12,6 @@ namespace LivingRoom
 
         uint8_t modbusAddressMTD262MB = 0;
         uint8_t modbusAddressWBMSW = 0;
+        uint8_t modbusAddressWBLED = 0;
     };
 }

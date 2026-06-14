@@ -7,7 +7,7 @@
 #include <log/log_config.h>
 
 #include "defines.h"
-#include "hallway/hallway_config.h"
+#include "hallway/config.h"
 #include "living_room/config.h"
 
 #define CURRENT_VERSION 2

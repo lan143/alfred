@@ -156,13 +156,8 @@
 
                         <form id="hallway-settings">
                             <div class="mb-3">
-                                <label for="mqttCommandTopic" class="form-label">Command topic</label>
-                                <input type="text" class="form-control" name="mqttCommandTopic" id="mqttCommandTopic">
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="mqttStateTopic" class="form-label">State topic</label>
-                                <input type="text" class="form-control" name="mqttStateTopic" id="mqttStateTopic">
+                                <label for="mqttTopicPrefix" class="form-label">MQTT Topic Prefix</label>
+                                <input type="text" class="form-control" name="mqttTopicPrefix" id="mqttTopicPrefix">
                             </div>
 
                             <div class="mb-3">
@@ -203,6 +198,11 @@
                             <div class="mb-3">
                                 <label for="modbusAddressWBMSW" class="form-label">Address WB-MSW</label>
                                 <input type="number" class="form-control" name="modbusAddressWBMSW" id="modbusAddressWBMSW">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="modbusAddressWBLED" class="form-label">Address WB-LED</label>
+                                <input type="number" class="form-control" name="modbusAddressWBLED" id="modbusAddressWBLED">
                             </div>
 
                             <div class="mb-12">

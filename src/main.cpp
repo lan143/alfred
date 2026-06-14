@@ -16,7 +16,6 @@
 
 #include "defines.h"
 #include "config.h"
-#include "hallway/command/command_consumer.h"
 #include "hallway/hallway.h"
 #include "living_room/living_room.h"
 #include "web/handler.h"
@@ -32,7 +31,6 @@ EDHealthCheck::HealthCheck healthCheck;
 EDHA::DiscoveryMgr discoveryMgr;
 
 Hallway::Hallway hallway(&discoveryMgr, &mqtt, &modbus);
-Hallway::CommandConsumer hallwayCommandConsumer(&hallway);
 
 LivingRoom::LivingRoom livingRoom(&discoveryMgr, &mqtt, &modbus);
 
@@ -72,15 +70,15 @@ void setup()
 
         strcpy(config->otaPassword, "somestrongpassword");
 
-        snprintf(config->hallway.mqttStateTopic, MQTT_TOPIC_LEN, "alfred/%s/hallway/state", EDUtils::getChipID());
-        snprintf(config->hallway.mqttCommandTopic, MQTT_TOPIC_LEN, "alfred/%s/hallway/set", EDUtils::getChipID());
+        snprintf(config->hallway.mqttTopicPrefix, MQTT_TOPIC_LEN, "alfred/%s/hallway", EDUtils::getChipID());
         config->hallway.modbusAddressMTD262MB = 1;
         config->hallway.modbusAddressWBLED = 2;
         config->hallway.modbusAddressWBMS = 3;
 
+        snprintf(config->livingRoom.mqttTopicPrefix, MQTT_TOPIC_LEN, "alfred/%s/living_room", EDUtils::getChipID());
         config->livingRoom.modbusAddressMTD262MB = 5;
         config->livingRoom.modbusAddressWBMSW = 6;
-        snprintf(config->livingRoom.mqttTopicPrefix, MQTT_TOPIC_LEN, "alfred/%s/living_room", EDUtils::getChipID());
+        config->livingRoom.modbusAddressWBLED = 7;
 
         config->modbusSpeed = 9600;
         config->modbusAddressWBMR6C = 4;
@@ -131,10 +129,6 @@ void setup()
     auto mr6c = modbus.addMR6C(configMgr.getData()->modbusAddressWBMR6C);
 
     hallway.init(configMgr.getData()->hallway, device, mr6c);
-
-    hallwayCommandConsumer.init(configMgr.getData()->hallway.mqttCommandTopic);
-    mqtt.subscribe(&hallwayCommandConsumer);
-
     livingRoom.init(configMgr.getData()->livingRoom, device, mr6c);
 
     LOGI("setup", "complete");
