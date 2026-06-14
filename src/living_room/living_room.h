@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include <automation/light.h>
 #include <binary_sensor/binary_sensor.h>
 #include <device/wb_mr6c.h>
 #include <discovery.h>
@@ -40,5 +41,7 @@ namespace LivingRoom
         EDCommon::Sensor::Sensor* _airQuality = nullptr;
         EDCommon::Sensor::Sensor* _co2 = nullptr;
         EDCommon::Sensor::Sensor* _lightLevel = nullptr;
+
+        EDCommon::Automation::Light* _lightAutomation = nullptr;
     };
 }
