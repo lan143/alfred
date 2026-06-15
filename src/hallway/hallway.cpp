@@ -118,7 +118,7 @@ void Hallway::Hallway::init(Config config, EDHA::Device* device, EDWB::MR6C* mr6
         ), EDCommon::Light::withDiscovery(_discoveryMgr, device)
     });
 
-    _lightAutomation = new EDCommon::Automation::Light(_hallwayLight, nullptr, _humanDetector, _lightLevel);
+    _lightAutomation = new EDCommon::Automation::Light(_hallwayLight, nullptr, _humanDetector);
     _lightAutomation->init("/hallway_light_state.bin", {
         EDCommon::Automation::withMQTT(
             _mqtt,

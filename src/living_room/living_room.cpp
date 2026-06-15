@@ -104,14 +104,15 @@ void LivingRoom::LivingRoom::init(Config config, EDHA::Device* device, EDWB::MR6
         EDCommon::Light::withDiscovery(_discoveryMgr, device)
     });
 
-    _lightAutomation = new EDCommon::Automation::Light(_livingRoomLight, nullptr, _humanDetector, _lightLevel);
+    _lightAutomation = new EDCommon::Automation::Light(_livingRoomLight, nullptr, _humanDetector);
     _lightAutomation->init("/living_room_light_state.bin", {
         EDCommon::Automation::withMQTT(
             _mqtt,
             config.mqttTopicPrefix,
             "alfred"
         ),
-        EDCommon::Automation::withDiscovery(_discoveryMgr, device)
+        EDCommon::Automation::withDiscovery(_discoveryMgr, device),
+        EDCommon::Automation::withLightLevelSensor(_lightLevel)
     });
 }
 
