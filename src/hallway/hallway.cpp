@@ -38,7 +38,9 @@ void Hallway::Hallway::init(Config config, EDHA::Device* device, EDWB::MR6C* mr6
             config.mqttTopicPrefix,
             "alfred",
             "Hallway temperature"
-        ), EDCommon::Sensor::withDiscovery(_discoveryMgr, device)
+        ),
+        EDCommon::Sensor::withDiscovery(_discoveryMgr, device),
+        EDCommon::Sensor::withKalmanFilter(0.2f, 0.3f)
     });
 
     _humidity = new EDCommon::Sensor::WBMSHumidity(_ms);
@@ -58,7 +60,9 @@ void Hallway::Hallway::init(Config config, EDHA::Device* device, EDWB::MR6C* mr6
             config.mqttTopicPrefix,
             "alfred",
             "Hallway floor temperature"
-        ), EDCommon::Sensor::withDiscovery(_discoveryMgr, device)
+        ),
+        EDCommon::Sensor::withDiscovery(_discoveryMgr, device),
+        EDCommon::Sensor::withKalmanFilter(0.2f, 0.3f)
     });
 
     _lightLevel = new EDCommon::Sensor::WBMSLightLevel(_ms);
