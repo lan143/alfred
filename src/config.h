@@ -10,7 +10,7 @@
 #include "hallway/config.h"
 #include "living_room/config.h"
 
-#define CURRENT_VERSION 2
+#define CURRENT_VERSION 3
 
 struct Config
 {

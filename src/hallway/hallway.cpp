@@ -123,7 +123,8 @@ void Hallway::Hallway::init(Config config, EDHA::Device* device, EDWB::MR6C* mr6
         EDCommon::Automation::withMQTT(
             _mqtt,
             config.mqttTopicPrefix,
-            "alfred"
+            "alfred",
+            "Hallway light automation"
         ),
         EDCommon::Automation::withDiscovery(_discoveryMgr, device)
     });

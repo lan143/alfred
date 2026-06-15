@@ -32,8 +32,8 @@ namespace LivingRoom
         EDMQTT::MQTT* _mqtt = nullptr;
         EDWB::WirenBoard* _modbus = nullptr;
 
-        EDCommon::Light::Relay* _livingRoomLight = nullptr;
-        EDCommon::Light::Relay* _livingRoomGarland = nullptr;
+        EDCommon::Light::Light* _livingRoomLight = nullptr;
+        EDCommon::Light::Light* _livingRoomGarland = nullptr;
 
         EDCommon::BinarySensor::BinarySensor* _humanDetector = nullptr;
         EDCommon::Sensor::Sensor* _temperature = nullptr;

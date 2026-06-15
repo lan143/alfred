@@ -80,8 +80,8 @@ void LivingRoom::LivingRoom::init(Config config, EDHA::Device* device, EDWB::MR6
 
     auto livingRoomRelay = new EDCommon::Relay::WBMR6C(mr6c);
     livingRoomRelay->init(MR6C_RELAY_CHANNEL_LIVING_ROOM_LIGHT, MR6C_CHANNEL_LIVING_ROOM_LIGHT_SWITCH, {});
-    _livingRoomLight = new EDCommon::Light::Relay(livingRoomRelay);
-    _livingRoomLight->init({
+    auto livingRoomLight = new EDCommon::Light::Relay(livingRoomRelay);
+    livingRoomLight->init({
         EDCommon::Light::withMQTT(
             _mqtt,
             config.mqttTopicPrefix,
@@ -90,11 +90,12 @@ void LivingRoom::LivingRoom::init(Config config, EDHA::Device* device, EDWB::MR6
         ),
         EDCommon::Light::withDiscovery(_discoveryMgr, device)
     });
+    _livingRoomLight = livingRoomLight;
 
     auto garlandRelay = new EDCommon::Relay::WBMR6C(mr6c);
     garlandRelay->init(MR6C_RELAY_CHANNEL_LIVING_ROOM_GARLAND, -1, {});
-    _livingRoomGarland = new EDCommon::Light::Relay(garlandRelay);
-    _livingRoomGarland->init({
+    auto livingRoomGarland = new EDCommon::Light::Relay(garlandRelay);
+    livingRoomGarland->init({
         EDCommon::Light::withMQTT(
             _mqtt,
             config.mqttTopicPrefix,
@@ -103,16 +104,19 @@ void LivingRoom::LivingRoom::init(Config config, EDHA::Device* device, EDWB::MR6
         ),
         EDCommon::Light::withDiscovery(_discoveryMgr, device)
     });
+    _livingRoomGarland = livingRoomGarland;
 
     _lightAutomation = new EDCommon::Automation::Light(_livingRoomLight, nullptr, _humanDetector);
     _lightAutomation->init("/living_room_light_state.bin", {
         EDCommon::Automation::withMQTT(
             _mqtt,
             config.mqttTopicPrefix,
-            "alfred"
+            "alfred",
+            "Living room light automation"
         ),
         EDCommon::Automation::withDiscovery(_discoveryMgr, device),
-        EDCommon::Automation::withLightLevelSensor(_lightLevel)
+        EDCommon::Automation::withLightLevelSensor(_lightLevel, 150.0f),
+        EDCommon::Automation::withNightMode()
     });
 }
 
