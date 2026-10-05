@@ -7,6 +7,7 @@
 #include <discovery.h>
 #include <mqtt.h>
 #include <light/relay_light.h>
+#include <light/wb_led_rgbw.h>
 #include <relay/wb_mr6c.h>
 #include <sensor/sensor.h>
 #include <wirenboard.h>
@@ -34,6 +35,7 @@ namespace LivingRoom
 
         EDCommon::Light::Light* _livingRoomLight = nullptr;
         EDCommon::Light::Light* _livingRoomGarland = nullptr;
+        EDCommon::Light::Light* _livingRoomBacklight = nullptr;
 
         EDCommon::BinarySensor::BinarySensor* _humanDetector = nullptr;
         EDCommon::Sensor::Sensor* _temperature = nullptr;

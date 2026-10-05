@@ -17,6 +17,7 @@ void LivingRoom::LivingRoom::init(Config config, EDHA::Device* device, EDWB::MR6
 
     auto msw = _modbus->addMSW(config.modbusAddressWBMSW);
     auto mtd262mb = _modbus->addMTD262MB(config.modbusAddressMTD262MB);
+    auto led = _modbus->addLED(config.modbusAddressWBLED);
 
     _temperature = new EDCommon::Sensor::WBMSWTemperature(msw);
     _temperature->init(2, 10000, {
@@ -106,6 +107,18 @@ void LivingRoom::LivingRoom::init(Config config, EDHA::Device* device, EDWB::MR6
     });
     _livingRoomGarland = livingRoomGarland;
 
+    auto backlight = new EDCommon::Light::WBLedRGBW(led);
+    backlight->init(0, {
+        EDCommon::Light::withMQTT(
+            _mqtt,
+            config.mqttTopicPrefix,
+            "alfred",
+            "Living room backlight"
+        ),
+        EDCommon::Light::withDiscovery(_discoveryMgr, device)
+    });
+    _livingRoomBacklight = backlight;
+
     _lightAutomation = new EDCommon::Automation::Light(_livingRoomLight, nullptr, _humanDetector);
     _lightAutomation->init("/living_room_light_state.bin", {
         EDCommon::Automation::withMQTT(
@@ -124,6 +137,7 @@ void LivingRoom::LivingRoom::update()
 {
     _livingRoomLight->update();
     _livingRoomGarland->update();
+    _livingRoomBacklight->update();
     _temperature->update();
     _humidity->update();
     _airQuality->update();
