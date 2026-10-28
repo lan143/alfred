@@ -119,7 +119,7 @@ void LivingRoom::LivingRoom::init(Config config, EDHA::Device* device, EDWB::MR6
     });
     _livingRoomBacklight = backlight;
 
-    _lightAutomation = new EDCommon::Automation::Light(_livingRoomLight, nullptr, _humanDetector);
+    _lightAutomation = new EDCommon::Automation::Light(_livingRoomLight, _livingRoomBacklight, _humanDetector);
     _lightAutomation->init("/living_room_light_state.bin", {
         EDCommon::Automation::withMQTT(
             _mqtt,
