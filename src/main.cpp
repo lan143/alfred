@@ -141,6 +141,7 @@ void loop()
     discoveryMgr.loop();
     ArduinoOTA.handle();
     healthCheck.loop();
+    modbus.loop();
     networkLogger.update();
     hallway.update();
     livingRoom.update();
